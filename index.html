@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Tutor Bot</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; display: flex; justify-content: center; height: 100vh; margin: 0; align-items: center; }
+    #chat-container { width: 380px; height: 600px; background: white; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+    #header { background: #007aff; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 16px; }
+    #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; word-break: break-word; }
+    .user { background: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .bot { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+    #input-area { display: flex; padding: 12px; background: #fff; border-top: 1px solid #eee; }
+    input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 14px; }
+    button { margin-left: 8px; padding: 10px 16px; background: #007aff; color: white; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div id="chat-container">
+  <div id="header">English Practice Assistant</div>
+  <div id="messages">
+    <div class="msg bot">Hello! I'm your English practice assistant. What would you like to chat about today?</div>
+  </div>
+  <div id="input-area">
+    <input type="text" id="userInput" placeholder="Type your English message..." onkeypress="if(event.key==='Enter') sendMessage()" />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    appendMessage(text, 'user');
+    input.value = '';
+
+    try {
+      const res = await fetch('http://localhost:3000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      const data = await res.json();
+      appendMessage(data.reply, 'bot');
+    } catch (err) {
+      appendMessage('Error: Cannot connect to server. Make sure node server.js is running.', 'bot');
+    }
+  }
+
+  function appendMessage(text, sender) {
+    const box = document.getElementById('messages');
+    const msg = document.createElement('div');
+    msg.className = `msg ${sender}`;
+    msg.innerText = text;
+    box.appendChild(msg);
+    box.scrollTop = box.scrollHeight;
+  }
+</script>
+
+</body>
+</html>
