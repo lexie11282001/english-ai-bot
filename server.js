@@ -26,7 +26,7 @@ app.post('/api/chat', async (req, res) => {
     chatHistory.push({ role: 'user', parts: [{ text: message }] });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-1.5-flash',
       contents: chatHistory,
       config: {
         systemInstruction: systemInstruction,
@@ -40,7 +40,7 @@ app.post('/api/chat', async (req, res) => {
     res.json({ reply: botReply });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "API call failed" });
+    res.status(500).json({ error: "API call failed: " + error.message });
   }
 });
 
