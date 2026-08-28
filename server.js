@@ -26,7 +26,7 @@ app.post('/api/chat', async (req, res) => {
     chatHistory.push({ role: 'user', parts: [{ text: message }] });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       contents: chatHistory,
       config: {
         systemInstruction: systemInstruction,
@@ -39,9 +39,10 @@ app.post('/api/chat', async (req, res) => {
 
     res.json({ reply: botReply });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "API call failed: " + error.message });
+    console.error("Gemini API Error:", error);
+    res.status(500).json({ error: "API call failed: " + (error.message || JSON.stringify(error)) });
   }
 });
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
