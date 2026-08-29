@@ -1,15 +1,15 @@
-import Express from 'express';
+import { GoogleGenAI } from '@google/genai';
+import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import Groq from 'groq-sdk';
 
 dotenv.config();
 
-const app = Express();
+const app = express();
 app.use(cors());
-app.use(Express.json());
+app.use(express.json());
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const systemInstruction = 
   "You are a friendly and patient English conversation tutor. " +
@@ -22,19 +22,19 @@ app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: "Message is required" });
 
-    const completion = await groq.chat.completions.create({
-      messages: [
-        { role: "system", content: systemInstruction },
-        { role: "user", content: message }
-      ],
-      model: "llama3-8b-8192", // 改用目前最穩定且超高速的 Groq 模型
-      temperature: 0.7,
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.6-flash',
+      contents: message,
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.7,
+      }
     });
 
-    const botReply = completion.choices[0]?.message?.content || "";
+    const botReply = response.text;
     res.json({ reply: botReply });
   } catch (error) {
-    console.error("API Error:", error);
+    console.error("Gemini API Error:", error);
     res.status(500).json({ error: "API call failed: " + (error.message || JSON.stringify(error)) });
   }
 });
