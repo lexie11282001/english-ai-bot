@@ -1,15 +1,15 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import express from 'express';
+import Express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import Groq from 'groq-sdk';
 
 dotenv.config();
 
-const app = express();
+const app = Express();
 app.use(cors());
-app.use(express.json());
+app.use(Express.json());
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const systemInstruction = 
   "You are a friendly and patient English conversation tutor. " +
@@ -22,19 +22,19 @@ app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: "Message is required" });
 
-    // 改用包含 -latest 的模型名稱
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash-latest",
-      systemInstruction: systemInstruction 
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: systemInstruction },
+        { role: "user", content: message }
+      ],
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.7,
     });
 
-    const result = await model.generateContent(message);
-    const response = await result.response;
-    const botReply = response.text();
-
+    const botReply = completion.choices[0]?.message?.content || "";
     res.json({ reply: botReply });
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("API Error:", error);
     res.status(500).json({ error: "API call failed: " + (error.message || JSON.stringify(error)) });
   }
 });
