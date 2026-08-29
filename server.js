@@ -27,7 +27,7 @@ app.post('/api/chat', async (req, res) => {
         { role: "system", content: systemInstruction },
         { role: "user", content: message }
       ],
-      model: "llama-3.1-70b-versatile",
+      model: "llama3-8b-8192", // 改用目前最穩定且超高速的 Groq 模型
       temperature: 0.7,
     });
 
